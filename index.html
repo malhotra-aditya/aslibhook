@@ -664,9 +664,16 @@ function save(){try{const k=currentUser?'ab_'+currentUser.uid:'ab_guest';localSt
 function loadData(uid){try{const k='ab_'+uid;const u=localStorage.getItem(k+'_u');const d=localStorage.getItem(k+'_d');if(u)ud=JSON.parse(u);if(d)appData=JSON.parse(d);}catch(e){}}
 
 // ══ AUTH STATE ════════════════════════════════════════════════════════════════
-auth.getRedirectResult().then(result=>{
-  // onAuthStateChanged handles everything
-}).catch(e=>{
+auth.getRedirectResult().then(result => {
+  if (result && result.user) {
+    currentUser = result.user;
+    loadData(result.user.uid);
+    if (ud.name) {
+      showMainApp(result.user);
+    } else {
+      showOnboarding();
+    }
+  }).catch(e=>{
   if(e.code&&e.code!=='auth/no-auth-event'&&e.code!=='auth/null-user'){
     toast('Google sign-in failed. Please try again.');
   }
