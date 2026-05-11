@@ -774,7 +774,17 @@ function loadData(uid) {
 }
 
 // ══ FIREBASE AUTH STATE ══════════════════════════════════════════════════════
-auth.onAuthStateChanged(user => {
+auth.getRedirectResult().then(result => {
+  if (result && result.user) {
+    // onAuthStateChanged will handle the rest
+  }
+}).catch(e => {
+  if (e.code !== 'auth/no-auth-event') {
+    toast('Google sign-in failed. Please try again.');
+  }
+});
+  
+  auth.onAuthStateChanged(user => {
   if (user) {
     currentUser = user;
     loadData(user.uid);
@@ -818,8 +828,7 @@ function showForgotPassword() { openAuthScreen('auth-forgot'); }
 async function signInGoogle() {
   const provider = new firebase.auth.GoogleAuthProvider();
   try {
-    await auth.signInWithPopup(provider);
-    // onAuthStateChanged handles the rest
+    await auth.signInWithRedirect(provider);
   } catch(e) {
     toast('Google sign-in failed. Please try again.');
   }
