@@ -248,7 +248,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);hei
 .sign-out-btn:hover{background:rgba(255,82,82,.12)}
 
 /* ── MODALS ── */
-.overlay{position:absolute;inset:0;background:rgba(0,0,0,.72);z-index:100;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.overlay{position:absolute;inset:0;background:rgba(0,0,0,.72);z-index:400;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
 .overlay.open{opacity:1;pointer-events:all}
 .modal{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r) var(--r) 0 0;padding:20px;width:100%;transform:translateY(16px);transition:transform .25s}
 .overlay.open .modal{transform:translateY(0)}
@@ -726,7 +726,7 @@ auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 // ══ AI PROXY URL ═════════════════════════════════════════════════════════════
 // REPLACE with your Vercel proxy URL once deployed
 // (keeps your DeepSeek API key hidden from users)
-const AI_PROXY_URL = 'pinkydidi-proxy.vercel.app/api/chat';
+const AI_PROXY_URL = 'https://pinkydidi-proxy.vercel.app/api/chat';
 
 // ══ SYSTEM PROMPT ════════════════════════════════════════════════════════════
 const SYS = `You are Pinky Didi — a warm but strict personal weight coach. You speak like an older didi (sister) who genuinely cares but will not let the user make excuses.
