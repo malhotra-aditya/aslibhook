@@ -802,15 +802,11 @@ auth.getRedirectResult().then(result => {
 
 // ══ AUTH SCREENS ═════════════════════════════════════════════════════════════
 function showLanding() {
-  hide('landing',false); // show
-  hide('auth-signup',true); hide('auth-verify',true);
-  hide('auth-login',true); hide('auth-forgot',true);
-  hide('onboard',true); hide('main-app',true);
-  document.getElementById('landing').style.display = 'flex';
   ['auth-signup','auth-verify','auth-login','auth-forgot','onboard','main-app'].forEach(id => {
     const el = document.getElementById(id);
     if(el){ el.style.display='none'; el.classList.remove('open'); }
   });
+  document.getElementById('landing').style.display = 'flex';
 }
 function openAuthScreen(id) {
   ['landing','auth-signup','auth-verify','auth-login','auth-forgot'].forEach(x => {
