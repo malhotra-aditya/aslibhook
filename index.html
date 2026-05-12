@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pinky Didi — Your Weight Coach</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0A0A0B;--bg2:#111113;--bg3:#1A1A1E;--bg4:#222228;--bg5:#2C2C32;
+  --border:#252528;--border2:#32323A;
+  --text:#F0EEE8;--text2:#9A9890;--text3:#55534F;
+  --accent:#C8F564;--accent2:#A8D44A;
+  --red:#FF5252;--amber:#F5A623;--blue:#5BA4FF;--purple:#A78BFA;
+  --r:14px;--r2:10px;--r3:8px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;max-width:480px;margin:0 auto;position:relative}
+.app{display:flex;flex-direction:column;height:100dvh;position:relative;overflow:hidden}
+
+/* ── LANDING ── */
+.landing{position:absolute;inset:0;background:var(--bg);z-index:300;display:flex;flex-direction:column;padding:0 24px;justify-content:center;gap:28px}
+.land-avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,rgba(200,245,100,.2),rgba(200,245,100,.05));border:2px solid rgba(200,245,100,.3);display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto}
+.land-name{font-size:26px;font-weight:600;letter-spacing:-.5px;text-align:center}
+.land-name span{color:var(--accent)}
+.land-tagline{font-size:13px;color:var(--text2);line-height:1.6;max-width:280px;text-align:center;margin:0 auto}
+.land-btns{display:flex;flex-direction:column;gap:10px}
+.btn-primary{padding:15px;border-radius:var(--r);border:none;background:var(--accent);color:#0A0A0B;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:all .15s;width:100%}
+.btn-primary:hover{background:var(--accent2)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed}
+.btn-secondary{padding:14px;border-radius:var(--r);border:1px solid var(--border2);background:transparent;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all .15s;width:100%}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.land-google-btn{display:flex;align-items:center;justify-content:center;gap:10px;padding:14px;border-radius:var(--r);border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all .15s;width:100%}
+.land-google-btn:hover{background:var(--bg4)}
+.divider{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--text3)}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.land-footer{font-size:11px;color:var(--text3);text-align:center;line-height:1.6}
+.land-footer a{color:var(--accent);cursor:pointer;text-decoration:none}
+
+/* ── AUTH ── */
+.auth-screen{position:absolute;inset:0;background:var(--bg);z-index:290;display:none;flex-direction:column;overflow:hidden}
+.auth-screen.open{display:flex}
+.auth-header{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0}
+.back-btn{width:32px;height:32px;border-radius:var(--r3);border:1px solid var(--border2);background:var(--bg3);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.auth-title{font-size:15px;font-weight:600}
+.auth-body{flex:1;overflow-y:auto;padding:24px 20px;display:flex;flex-direction:column;gap:18px;scrollbar-width:none}
+.field-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;font-weight:500}
+.field-input{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r3);padding:12px 14px;color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;outline:none;transition:border .15s;width:100%}
+.field-input:focus{border-color:var(--accent)}
+.field-input::placeholder{color:var(--text3)}
+.field-error{font-size:12px;color:var(--red);margin-top:4px;display:none}
+.field-error.show{display:block}
+.field-hint{font-size:11px;color:var(--text3);margin-top:4px;line-height:1.5}
+.auth-footer{flex-shrink:0;padding:12px 20px 20px;border-top:1px solid var(--border)}
+.auth-switch{font-size:12px;color:var(--text3);text-align:center;margin-top:12px}
+.auth-switch a{color:var(--accent);cursor:pointer}
+
+/* ── ONBOARDING ── */
+.onboard{position:absolute;inset:0;background:var(--bg);z-index:200;display:none;flex-direction:column;overflow:hidden}
+.onboard.open{display:flex}
+.ob-prog{height:3px;background:var(--bg3);flex-shrink:0}
+.ob-bar{height:100%;background:var(--accent);transition:width .4s}
+.ob-body{flex:1;overflow-y:auto;padding:24px 20px 16px;scrollbar-width:none}
+.ob-step{display:none;flex-direction:column;gap:16px}
+.ob-step.active{display:flex;animation:fi .3s ease}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.ob-eye{font-size:10px;color:var(--accent);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.ob-title{font-size:20px;font-weight:600;letter-spacing:-.4px;line-height:1.2;margin-top:4px}
+.ob-sub{font-size:13px;color:var(--text2);line-height:1.6}
+.ob-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.g-btns{display:flex;gap:8px}
+.g-btn{flex:1;padding:10px;border-radius:var(--r3);border:1px solid var(--border2);background:var(--bg3);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;text-align:center}
+.g-btn.sel{background:rgba(200,245,100,.1);border-color:var(--accent);color:var(--accent)}
+.bmi-card{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:14px;display:flex;align-items:center;justify-content:space-between;transition:opacity .3s}
+.bmi-num{font-size:26px;font-weight:600;font-family:'DM Mono',monospace;letter-spacing:-1px}
+.bmi-pill-ob{font-size:10px;font-weight:600;padding:2px 9px;border-radius:20px;margin-top:5px;display:inline-block;opacity:0}
+.activity-opt{display:flex;flex-direction:column;gap:8px}
+.act-opt-btn{padding:13px 14px;border-radius:var(--r2);border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;text-align:left;display:flex;align-items:center;gap:10px}
+.act-opt-btn.sel{border-color:var(--accent);background:rgba(200,245,100,.07);color:var(--accent)}
+.act-opt-btn svg{width:18px;height:18px;flex-shrink:0}
+.duration-pills{display:flex;gap:8px;flex-wrap:wrap}
+.dur-pill{padding:8px 16px;border-radius:20px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.dur-pill.sel{background:rgba(200,245,100,.1);border-color:var(--accent);color:var(--accent)}
+.act-type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.act-type-pill{padding:10px 6px;border-radius:var(--r2);border:1px solid var(--border2);background:var(--bg3);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;cursor:pointer;transition:all .15s;text-align:center}
+.act-type-pill.sel{background:rgba(200,245,100,.1);border-color:var(--accent);color:var(--accent)}
+.legal-scroll{max-height:200px;overflow-y:auto;background:var(--bg4);border:1px solid var(--border2);border-radius:var(--r2);padding:13px;font-size:11.5px;color:var(--text2);line-height:1.7;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.legal-scroll h4{color:var(--text);font-size:12px;margin-top:10px;margin-bottom:3px;font-weight:600}
+.legal-scroll h4:first-child{margin-top:0}
+.check-row{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r3);cursor:pointer;transition:border .15s}
+.check-row.checked{border-color:var(--accent)}
+.check-box{width:18px;height:18px;border-radius:4px;border:1.5px solid var(--border2);background:var(--bg4);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s;margin-top:1px}
+.check-row.checked .check-box{background:var(--accent);border-color:var(--accent)}
+.check-text{font-size:12px;color:var(--text2);line-height:1.5}
+.health-warn{background:rgba(255,82,82,.07);border:1px solid rgba(255,82,82,.2);border-radius:var(--r2);padding:12px 14px}
+.hw-title{font-size:11px;color:var(--red);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.hw-text{font-size:12px;color:var(--text2);line-height:1.6}
+.ob-footer{flex-shrink:0;padding:12px 20px 20px;border-top:1px solid var(--border)}
+.ob-btn-row{display:flex;gap:8px}
+.ob-next{flex:1;padding:13px;border-radius:var(--r);border:none;background:var(--accent);color:#0A0A0B;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s}
+.ob-next:hover{background:var(--accent2)}
+.ob-back{padding:13px 18px;border-radius:var(--r);border:1px solid var(--border2);background:transparent;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer}
+
+/* ── MAIN ── */
+.screens{flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0}
+.screen{display:none;flex:1;overflow:hidden;flex-direction:column;min-height:0}
+.screen.active{display:flex}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--bg)}
+.top-logo{font-size:15px;font-weight:600;color:var(--text)}
+.top-logo span{color:var(--accent)}
+.top-right{display:flex;gap:8px;align-items:center}
+.icon-btn{width:34px;height:34px;border-radius:var(--r3);background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:border .15s;flex-shrink:0}
+.bell-dot{position:absolute;top:6px;right:7px;width:6px;height:6px;border-radius:50%;background:var(--red);border:1.5px solid var(--bg);display:none}
+.bell-dot.show{display:block}
+
+/* NOTIF PANEL */
+.notif-panel{position:absolute;top:54px;right:12px;width:290px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);z-index:500;box-shadow:0 8px 32px rgba(0,0,0,.6);display:none;overflow:hidden}
+.notif-panel.open{display:block}
+.np-head{padding:10px 14px;border-bottom:1px solid var(--border);font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;display:flex;justify-content:space-between;align-items:center}
+.np-clear{font-size:10px;color:var(--accent);cursor:pointer}
+.np-item{display:flex;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
+.np-item:hover{background:var(--bg3)}
+.np-item:last-child{border-bottom:none}
+.np-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.np-text{font-size:12px;color:var(--text);line-height:1.45}
+.np-time{font-size:10px;color:var(--text3);margin-top:2px}
+
+/* CHAT */
+.chat-hist{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.msg{display:flex;flex-direction:column;max-width:84%}
+.msg.ai{align-self:flex-start}
+.msg.user{align-self:flex-end;align-items:flex-end}
+.msg-tag{font-size:9.5px;color:var(--accent);font-weight:600;letter-spacing:.6px;margin-bottom:3px;padding:0 2px}
+.bubble{padding:10px 13px;border-radius:var(--r);font-size:13px;line-height:1.55}
+.msg.ai .bubble{background:var(--bg3);border:1px solid var(--border2);border-bottom-left-radius:4px}
+.msg.user .bubble{background:var(--accent);color:#0A0A0B;font-weight:500;border-bottom-right-radius:4px}
+.msg-time{font-size:9px;color:var(--text3);padding:2px 2px;margin-top:2px}
+.img-preview{width:180px;border-radius:var(--r2);border:1px solid var(--border2);object-fit:cover;max-height:140px}
+.typing{display:flex;gap:4px;align-items:center;padding:10px 13px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);border-bottom-left-radius:4px;width:fit-content}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--text3);animation:dp 1.1s ease-in-out infinite}
+.dot:nth-child(2){animation-delay:.18s}.dot:nth-child(3){animation-delay:.36s}
+@keyframes dp{0%,60%,100%{opacity:.3;transform:scale(1)}30%{opacity:1;transform:scale(1.3)}}
+
+/* EDUCATIONAL NUDGE */
+.edu-nudge{margin:0 14px 10px;background:rgba(200,245,100,.04);border:1px solid rgba(200,245,100,.15);border-radius:var(--r2);padding:10px 13px;display:flex;align-items:flex-start;gap:10px;animation:fi .3s ease;flex-shrink:0}
+.edu-nudge-text{font-size:12px;color:var(--text2);line-height:1.5;flex:1}
+.edu-nudge-close{font-size:16px;color:var(--text3);cursor:pointer;line-height:1;flex-shrink:0;margin-top:-1px}
+
+.act-bar{padding:10px 14px 8px;border-top:1px solid var(--border);background:var(--bg);flex-shrink:0}
+.act-btns{display:flex;gap:7px;margin-bottom:8px}
+.act-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 6px;border-radius:var(--r2);border:1px solid var(--border2);background:var(--bg3);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.act-btn:hover{background:var(--bg4)}
+.act-btn svg{width:19px;height:19px}
+.act-lbl{font-size:10px;color:var(--text2);font-weight:500}
+.chat-row{display:flex;gap:7px;align-items:flex-end}
+.chat-in{flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r2);padding:10px 12px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;resize:none;height:42px;line-height:1.4;outline:none;transition:border .15s,height .2s}
+.chat-in:focus{border-color:var(--accent);height:80px}
+.chat-in::placeholder{color:var(--text3)}
+.send-btn{width:42px;height:42px;border-radius:var(--r2);background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.send-btn:hover{background:var(--accent2)}
+.send-btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* DASHBOARD */
+.scroll{flex:1;overflow-y:auto;padding:14px;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.section-hd{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px;font-weight:500}
+.insight-box{background:rgba(200,245,100,.04);border:1px solid rgba(200,245,100,.14);border-radius:var(--r);padding:12px;margin-bottom:12px;cursor:pointer;transition:border .15s}
+.insight-box:hover{border-color:rgba(200,245,100,.3)}
+.ib-label{font-size:9.5px;color:var(--accent);font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.ib-text{font-size:12px;color:var(--text);line-height:1.5}
+.metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
+.mc{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:12px}
+.mc-l{font-size:9.5px;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px}
+.mc-v{font-size:22px;font-weight:600;letter-spacing:-.5px;line-height:1;font-family:'DM Mono',monospace}
+.mc-u{font-size:10px;color:var(--text2);margin-top:2px}
+.badge{display:inline-flex;font-size:9.5px;padding:2px 8px;border-radius:20px;margin-top:5px;font-weight:500}
+.bg{background:rgba(200,245,100,.1);color:var(--accent)}
+.ba{background:rgba(245,166,35,.1);color:var(--amber)}
+.bb{background:rgba(91,164,255,.1);color:var(--blue)}
+.chart-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:12px;margin-bottom:10px}
+.cc-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.cc-t{font-size:12px;font-weight:600}
+.cc-s{font-size:10px;color:var(--text3)}
+.wt-svg{width:100%;height:80px}
+.fc-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:5px}
+.fc-day{font-size:8px;color:var(--text3);text-align:center}
+.fc-cell{aspect-ratio:1;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:500}
+.fc-ate{background:rgba(200,245,100,.15);color:var(--accent)}
+.fc-miss{background:var(--bg4);color:var(--text3)}
+.half{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.sleep-bars{display:flex;align-items:flex-end;gap:4px;height:50px;margin-top:8px}
+.sb{flex:1;border-radius:3px 3px 0 0;background:rgba(91,164,255,.08);position:relative;height:100%}
+.sb-f{position:absolute;bottom:0;left:0;right:0;border-radius:3px 3px 0 0;background:var(--blue);opacity:.65}
+.sb-d{font-size:8px;color:var(--text3);text-align:center;margin-top:3px}
+.log-row{display:flex;gap:8px;margin-bottom:10px}
+.log-input{flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r3);padding:9px 12px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;transition:border .15s}
+.log-input:focus{border-color:var(--accent)}
+.log-input::placeholder{color:var(--text3)}
+.log-btn{padding:9px 14px;border-radius:var(--r3);border:none;background:var(--accent);color:#0A0A0B;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
+
+/* ACTIVITY */
+.activity-scroll{flex:1;overflow-y:auto;padding:14px;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.act-pills{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.act-pill{padding:8px 14px;border-radius:20px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px}
+.act-pill.sel{background:rgba(200,245,100,.1);border-color:var(--accent);color:var(--accent)}
+.act-timer-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:20px;text-align:center;margin-bottom:14px}
+.act-timer-num{font-size:40px;font-weight:600;font-family:'DM Mono',monospace;letter-spacing:-2px;color:var(--text)}
+.act-timer-label{font-size:11px;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
+.act-btn-row{display:flex;gap:10px;margin-bottom:14px}
+.act-start-btn{flex:1;padding:14px;border-radius:var(--r);border:none;background:var(--accent);color:#0A0A0B;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s}
+.act-start-btn:hover{background:var(--accent2)}
+.act-end-btn{flex:1;padding:14px;border-radius:var(--r);border:none;background:var(--red);color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s}
+.act-end-btn:disabled{opacity:.35;cursor:not-allowed}
+.act-hist-item{display:flex;align-items:center;justify-content:space-between;padding:10px 13px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);margin-bottom:7px}
+.act-hist-left{display:flex;flex-direction:column;gap:2px}
+.act-hist-name{font-size:13px;font-weight:500}
+.act-hist-date{font-size:10px;color:var(--text3)}
+.act-hist-dur{font-size:13px;font-weight:600;font-family:'DM Mono',monospace}
+
+/* PROFILE */
+.profile-scroll{flex:1;overflow-y:auto;padding:14px;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.av-row{display:flex;align-items:center;gap:14px;padding:16px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);margin-bottom:14px}
+.av{width:52px;height:52px;border-radius:50%;background:rgba(200,245,100,.12);border:2px solid rgba(200,245,100,.25);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600;color:var(--accent);flex-shrink:0;overflow:hidden}
+.av img{width:100%;height:100%;object-fit:cover}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:14px}
+.stat-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:10px;text-align:center}
+.sv{font-size:17px;font-weight:600;font-family:'DM Mono',monospace}
+.sl{font-size:9.5px;color:var(--text3);margin-top:2px;text-transform:uppercase;letter-spacing:.4px}
+.info-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:12px}
+.ir{display:flex;align-items:center;justify-content:space-between;padding:11px 13px;border-bottom:1px solid var(--border);cursor:default}
+.ir:last-child{border-bottom:none}
+.ir.tappable{cursor:pointer;transition:background .1s}
+.ir.tappable:hover{background:var(--bg4)}
+.ik{font-size:12px;color:var(--text2)}
+.iv{font-size:12px;font-weight:500}
+.toggle{width:36px;height:20px;border-radius:20px;background:var(--bg5);border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
+.toggle.on{background:var(--accent)}
+.toggle::after{content:'';position:absolute;width:14px;height:14px;border-radius:50%;background:white;top:3px;left:3px;transition:transform .2s}
+.toggle.on::after{transform:translateX(16px)}
+.sign-out-btn{width:100%;padding:12px;border-radius:var(--r2);border:1px solid rgba(255,82,82,.3);background:rgba(255,82,82,.07);color:var(--red);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;margin-bottom:10px;transition:all .15s}
+.sign-out-btn:hover{background:rgba(255,82,82,.12)}
+.del-btn{width:100%;padding:12px;border-radius:var(--r2);border:1px solid var(--border2);background:transparent;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;margin-bottom:14px}
+
+/* ADMIN */
+.admin-banner{background:rgba(167,139,250,.08);border-bottom:1px solid rgba(167,139,250,.2);padding:8px 14px;font-size:11px;color:var(--purple);flex-shrink:0;display:flex;align-items:center;gap:6px}
+.admin-metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-bottom:12px}
+.amc{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:12px}
+.amc-l{font-size:9.5px;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+.amc-v{font-size:20px;font-weight:600;font-family:'DM Mono',monospace}
+.amc-s{font-size:10px;color:var(--text2);margin-top:2px}
+.bar-chart{display:flex;flex-direction:column;gap:7px;margin-top:8px}
+.bc-row{display:flex;align-items:center;gap:8px}
+.bc-label{font-size:11px;color:var(--text2);width:90px;flex-shrink:0;text-align:right}
+.bc-track{flex:1;background:var(--bg4);border-radius:4px;height:7px;overflow:hidden}
+.bc-fill{height:100%;border-radius:4px}
+.bc-val{font-size:10px;color:var(--text2);width:32px;flex-shrink:0;font-family:'DM Mono',monospace}
+.retention-row{display:flex;gap:7px;margin-top:8px}
+.ret-box{flex:1;background:var(--bg4);border-radius:var(--r2);padding:9px;text-align:center}
+.ret-v{font-size:17px;font-weight:600;font-family:'DM Mono',monospace}
+.ret-l{font-size:9px;color:var(--text3);margin-top:2px}
+
+/* MODALS */
+.overlay{position:absolute;inset:0;background:rgba(0,0,0,.72);z-index:400;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r) var(--r) 0 0;padding:20px;width:100%;transform:translateY(16px);transition:transform .25s}
+.overlay.open .modal{transform:translateY(0)}
+.modal-t{font-size:15px;font-weight:600;margin-bottom:6px}
+.modal-s{font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:18px}
+.modal-btns{display:flex;gap:8px}
+.mc-start{flex:1;padding:13px;border-radius:var(--r2);border:none;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;background:var(--accent);color:#0A0A0B}
+.mc-stop{flex:1;padding:13px;border-radius:var(--r2);border:none;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;background:var(--red);color:#fff}
+.mc-cancel{padding:13px 18px;border-radius:var(--r2);border:1px solid var(--border2);background:transparent;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer}
+
+/* A2HS PROMPT */
+.a2hs-sheet{position:absolute;bottom:0;left:0;right:0;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r) var(--r) 0 0;padding:20px;z-index:450;transform:translateY(100%);transition:transform .3s;box-shadow:0 -4px 32px rgba(0,0,0,.5)}
+.a2hs-sheet.open{transform:translateY(0)}
+.a2hs-title{font-size:15px;font-weight:600;margin-bottom:5px}
+.a2hs-sub{font-size:12.5px;color:var(--text2);line-height:1.5;margin-bottom:16px}
+.a2hs-btns{display:flex;gap:8px}
+
+/* BOTTOM NAV */
+.bottom-nav{display:flex;border-top:1px solid var(--border);background:var(--bg);flex-shrink:0}
+.bn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0 12px;cursor:pointer;border:none;background:transparent;color:var(--text3);font-family:'DM Sans',sans-serif;transition:color .15s}
+.bn.active{color:var(--accent)}
+.bn svg{width:20px;height:20px}
+.bn-l{font-size:9.5px;font-weight:500;letter-spacing:.2px}
+
+/* TOAST */
+.toast{position:absolute;bottom:80px;left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r2);padding:9px 16px;font-size:12px;z-index:600;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .25s;box-shadow:0 4px 20px rgba(0,0,0,.5);max-width:90%;text-align:center}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- LANDING -->
+<div id="landing" class="landing">
+  <div class="land-avatar">🌸</div>
+  <div>
+    <div class="land-name">Pinky <span>Didi</span></div>
+    <div style="font-size:13px;color:var(--text3);text-align:center;margin-top:3px;letter-spacing:.3px">Your Personal Weight Coach</div>
+  </div>
+  <div class="land-tagline">Pinky Didi tracks your meals, your activity, and gently guides you toward healthier habits — one day at a time.</div>
+  <div class="land-btns">
+    <button class="btn-primary" onclick="showSignup()">Create account</button>
+    <button class="btn-secondary" onclick="showLogin()">Log in</button>
+    <div class="divider">or</div>
+    <button class="land-google-btn" onclick="signInGoogle()">
+      <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Continue with Google
+    </button>
+  </div>
+  <div class="land-footer">By continuing you agree to our <a onclick="showLegalModal('tc')">Terms &amp; Conditions</a> and <a onclick="showLegalModal('pp')">Privacy Policy</a></div>
+</div>
+
+<!-- SIGN UP -->
+<div id="auth-signup" class="auth-screen">
+  <div class="auth-header"><div class="back-btn" onclick="showLanding()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div><div class="auth-title">Create account</div></div>
+  <div class="auth-body">
+    <div><div class="field-label">Full Name</div><input class="field-input" id="su-name" placeholder="Your name" type="text"></div>
+    <div><div class="field-label">Email address</div><input class="field-input" id="su-email" placeholder="you@example.com" type="email" oninput="clearErr('su-email-err')"><div class="field-error" id="su-email-err"></div></div>
+    <div><div class="field-label">Password</div><input class="field-input" id="su-pass" placeholder="Min 8 characters" type="password" oninput="clearErr('su-pass-err')"><div class="field-error" id="su-pass-err"></div><div class="field-hint">Use at least 8 characters with a number or symbol</div></div>
+  </div>
+  <div class="auth-footer"><button class="btn-primary" id="su-btn" onclick="doSignup()">Create account &amp; verify email</button><div class="auth-switch">Already have an account? <a onclick="showLogin()">Log in</a></div></div>
+</div>
+
+<!-- VERIFY -->
+<div id="auth-verify" class="auth-screen">
+  <div class="auth-header"><div class="back-btn" onclick="showSignup()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div><div class="auth-title">Verify your email</div></div>
+  <div class="auth-body">
+    <div style="font-size:13px;color:var(--text2);line-height:1.6">We sent a verification link to <strong id="verify-email-display" style="color:var(--text)"></strong>. Click the link, then press the button below.</div>
+    <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r2);padding:12px"><div style="font-size:11px;color:var(--text3);line-height:1.6">Check your spam folder if you do not see it.</div></div>
+    <div class="field-error" id="verify-err" style="text-align:center"></div>
+    <div style="text-align:center"><button style="font-size:12px;color:var(--accent);cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;padding:4px 8px" onclick="resendVerification()">Resend verification email</button></div>
+  </div>
+  <div class="auth-footer"><button class="btn-primary" onclick="checkVerified()">I have verified my email →</button></div>
+</div>
+
+<!-- LOGIN -->
+<div id="auth-login" class="auth-screen">
+  <div class="auth-header"><div class="back-btn" onclick="showLanding()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div><div class="auth-title">Log in</div></div>
+  <div class="auth-body">
+    <div><div class="field-label">Email address</div><input class="field-input" id="li-email" placeholder="you@example.com" type="email" oninput="clearErr('li-err')"></div>
+    <div><div class="field-label">Password</div><input class="field-input" id="li-pass" placeholder="Your password" type="password" oninput="clearErr('li-err')" onkeydown="if(event.key==='Enter')doLogin()"><div class="field-error" id="li-err"></div></div>
+    <div style="text-align:right"><a onclick="showForgotPw()" style="font-size:12px;color:var(--accent);cursor:pointer">Forgot password?</a></div>
+  </div>
+  <div class="auth-footer"><button class="btn-primary" id="li-btn" onclick="doLogin()">Log in</button><div class="auth-switch">New here? <a onclick="showSignup()">Create account</a></div></div>
+</div>
+
+<!-- FORGOT PW -->
+<div id="auth-forgot" class="auth-screen">
+  <div class="auth-header"><div class="back-btn" onclick="showLogin()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div><div class="auth-title">Reset password</div></div>
+  <div class="auth-body">
+    <div style="font-size:13px;color:var(--text2);line-height:1.6">Enter your email and we will send you a reset link.</div>
+    <div><div class="field-label">Email address</div><input class="field-input" id="fp-email" placeholder="you@example.com" type="email"><div class="field-error" id="fp-err"></div></div>
+  </div>
+  <div class="auth-footer"><button class="btn-primary" onclick="doForgotPw()">Send reset link</button></div>
+</div>
+
+<!-- ONBOARDING -->
+<div id="onboard" class="onboard">
+  <div class="ob-prog"><div class="ob-bar" id="ob-bar" style="width:14%"></div></div>
+  <div class="ob-body">
+
+    <!-- Step 1: Welcome -->
+    <div class="ob-step active" id="ob-step-1" style="padding-top:24px">
+      <div><div class="ob-eye">Welcome</div><div class="ob-title">Meet Pinky Didi 🌸</div><div class="ob-sub" style="margin-top:6px">Your personal weight coach. She tracks your meals, activity, and guides you with simple, structured advice — every day.</div></div>
+      <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:14px">
+        <div style="font-size:10px;color:var(--accent);font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px">The approach</div>
+        <div style="font-size:12.5px;color:var(--text2);line-height:1.9">
+          <div style="margin-bottom:4px">🍳 &nbsp;Eat high fat, high protein — less grains and sugar</div>
+          <div style="margin-bottom:4px">💧 &nbsp;Stay hydrated — 4 litres of water daily</div>
+          <div style="margin-bottom:4px">🚶 &nbsp;Move your body every day</div>
+          <div>📸 &nbsp;Log meals with photos for AI feedback</div>
+        </div>
+      </div>
+      <div class="health-warn"><div class="hw-title">Health notice</div><div class="hw-text">This app is not a substitute for medical advice. If you have diabetes, are pregnant, or have any medical condition, please consult your doctor before making dietary changes.</div></div>
+    </div>
+
+    <!-- Step 2: Personal details -->
+    <div class="ob-step" id="ob-step-2">
+      <div><div class="ob-eye">Step 1 of 5</div><div class="ob-title">About you</div></div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div><div class="field-label">Full Name *</div><input class="ob-input field-input" id="ob-name" placeholder="Your name" type="text"></div>
+        <div class="ob-row">
+          <div><div class="field-label">Age *</div><input class="ob-input field-input" id="ob-age" placeholder="Years" type="number" min="18" max="100"></div>
+          <div><div class="field-label">Gender *</div>
+            <div class="g-btns"><button class="g-btn sel" id="gb-m" onclick="selG('M')">Male</button><button class="g-btn" id="gb-f" onclick="selG('F')">Female</button></div>
+          </div>
+        </div>
+        <div><div class="field-label">Diet preference</div>
+          <div class="g-btns">
+            <button class="g-btn sel" id="diet-veg" onclick="selDiet('veg')">Vegetarian</button>
+            <button class="g-btn" id="diet-nonveg" onclick="selDiet('nonveg')">Non-vegetarian</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: Body -->
+    <div class="ob-step" id="ob-step-3">
+      <div><div class="ob-eye">Step 2 of 5</div><div class="ob-title">Body measurements</div><div class="ob-sub" style="margin-top:4px">Optional — used to track your progress over time.</div></div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="ob-row">
+          <div><div class="field-label">Weight (kg)</div><input class="field-input" id="ob-wt" placeholder="e.g. 78" type="number" oninput="calcBMI()"></div>
+          <div><div class="field-label">Height (cm)</div><input class="field-input" id="ob-ht" placeholder="e.g. 170" type="number" oninput="calcBMI()"></div>
+        </div>
+        <div><div class="field-label">Goal weight (kg)</div><input class="field-input" id="ob-goal" placeholder="e.g. 70" type="number"></div>
+        <div class="bmi-card" id="bmi-card" style="opacity:.4">
+          <div>
+            <div style="font-size:10px;color:var(--text2);margin-bottom:3px">Your BMI</div>
+            <div class="bmi-num" id="bmi-num">—</div>
+            <div class="bmi-pill-ob" id="bmi-pill"></div>
+          </div>
+          <div style="text-align:right"><div style="font-size:10px;color:var(--text3)">Healthy range</div><div style="font-size:13px;font-weight:600;margin-top:2px;font-family:'DM Mono',monospace">18.5 – 24.9</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4: Activity preference -->
+    <div class="ob-step" id="ob-step-4">
+      <div><div class="ob-eye">Step 3 of 5</div><div class="ob-title">Are you comfortable with physical activity?</div><div class="ob-sub" style="margin-top:4px">This helps us personalise your experience.</div></div>
+      <div class="activity-opt">
+        <button class="act-opt-btn sel" id="act-yes" onclick="selActPref('yes')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Yes, I can do physical activity
+        </button>
+        <button class="act-opt-btn" id="act-no" onclick="selActPref('no')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+          No, I prefer to skip activity for now
+        </button>
+      </div>
+      <div id="act-details" style="display:flex;flex-direction:column;gap:14px">
+        <div>
+          <div class="field-label" style="margin-bottom:8px">How long can you dedicate daily?</div>
+          <div class="duration-pills" id="dur-pills">
+            <div class="dur-pill" onclick="selDur(this,'15')">15 min</div>
+            <div class="dur-pill sel" onclick="selDur(this,'30')">30 min</div>
+            <div class="dur-pill" onclick="selDur(this,'45')">45 min</div>
+            <div class="dur-pill" onclick="selDur(this,'60')">60 min</div>
+          </div>
+        </div>
+        <div>
+          <div class="field-label" style="margin-bottom:8px">Preferred activity types</div>
+          <div class="act-type-grid" id="act-type-grid">
+            <div class="act-type-pill sel" onclick="toggleActType(this,'Walking')">🚶 Walking</div>
+            <div class="act-type-pill" onclick="toggleActType(this,'Running')">🏃 Running</div>
+            <div class="act-type-pill" onclick="toggleActType(this,'Cycling')">🚴 Cycling</div>
+            <div class="act-type-pill" onclick="toggleActType(this,'Swimming')">🏊 Swimming</div>
+            <div class="act-type-pill" onclick="toggleActType(this,'Yoga')">🧘 Yoga</div>
+            <div class="act-type-pill" onclick="toggleActType(this,'Gym')">💪 Gym</div>
+            <div class="act-type-pill" onclick="toggleActType(this,'Meditation')">🧠 Meditation</div>
+            <div class="act-type-pill" onclick="toggleActType(this,'Badminton')">🏸 Badminton</div>
+            <div class="act-type-pill" onclick="toggleActType(this,'Chair')">🪑 Chair exercises</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 5: Legal -->
+    <div class="ob-step" id="ob-step-5">
+      <div><div class="ob-eye">Step 4 of 5</div><div class="ob-title">Terms &amp; Privacy</div><div class="ob-sub" style="margin-top:4px">Please read and accept before continuing.</div></div>
+      <div class="legal-scroll" id="tc-scroll">
+        <h4>Terms &amp; Conditions — Pinky Didi App</h4>
+        <p>Last updated: May 2026. These Terms govern your use of the Pinky Didi application ("App").</p>
+        <h4>1. No Medical Advice or Warranty</h4>
+        <p>The App provides general lifestyle guidance only. It does not constitute medical advice. We make no guarantee regarding weight outcomes. Results depend entirely on individual factors outside our control.</p>
+        <h4>2. Not a Substitute for Medical Care</h4>
+        <p>Always consult a qualified medical professional before changing your diet or exercise routine. This App is not intended for individuals with eating disorders, diabetes, pregnancy, or other medical conditions without medical supervision.</p>
+        <h4>3. Eligibility</h4><p>You must be at least 18 years of age to use this App.</p>
+        <h4>4. User Indemnification</h4>
+        <p>By using this App, you agree to indemnify and hold harmless the founder from any claims arising from your use of the App, including any health outcomes. This indemnification survives termination of your account.</p>
+        <h4>5. Limitation of Liability</h4>
+        <p>To the maximum extent permitted by applicable law, our total liability shall not exceed INR 500.</p>
+        <h4>6. Governing Law</h4>
+        <p>These Terms are governed by the laws of India. All disputes are subject to the exclusive jurisdiction of the courts of New Delhi, India.</p>
+        <h4>7. Dispute Resolution</h4>
+        <p>Disputes shall first go through 30-day good-faith negotiation, then arbitration under the Arbitration and Conciliation Act, 1996 (India), in New Delhi.</p>
+        <h4>8. Data</h4>
+        <p>We collect name, email, age, gender, and body measurements to provide the service. AI queries are processed by DeepSeek's API. We do not sell your data.</p>
+      </div>
+      <div class="check-row" id="tc-check" onclick="toggleCheck('tc-check','tc-tick')"><div class="check-box" id="tc-box"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="#0A0A0B" stroke-width="2.5" style="display:none" id="tc-tick"><polyline points="2 6 5 9 10 3"/></svg></div><div class="check-text">I have read and agree to the Terms &amp; Conditions</div></div>
+      <div class="check-row" id="pp-check" onclick="toggleCheck('pp-check','pp-tick')"><div class="check-box" id="pp-box"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="#0A0A0B" stroke-width="2.5" style="display:none" id="pp-tick"><polyline points="2 6 5 9 10 3"/></svg></div><div class="check-text">I have read and agree to the Privacy Policy</div></div>
+      <div class="check-row" id="age-check" onclick="toggleCheck('age-check','age-tick')"><div class="check-box" id="age-box"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="#0A0A0B" stroke-width="2.5" style="display:none" id="age-tick"><polyline points="2 6 5 9 10 3"/></svg></div><div class="check-text">I confirm I am 18 or older and do not have an active eating disorder</div></div>
+    </div>
+
+    <!-- Step 6: Ready -->
+    <div class="ob-step" id="ob-step-6">
+      <div><div class="ob-eye">Step 5 of 5</div><div class="ob-title">You are all set! 🌸</div><div class="ob-sub" style="margin-top:6px">Pinky Didi is ready. She will be with you every day.</div></div>
+      <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:14px">
+        <div style="font-size:10px;color:var(--accent);font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px">Start here</div>
+        <div style="font-size:12.5px;color:var(--text2);line-height:1.9">
+          <div style="margin-bottom:4px">⚖️ &nbsp;Weigh yourself tomorrow morning — empty stomach</div>
+          <div style="margin-bottom:4px">📸 &nbsp;Upload a photo of your scale reading</div>
+          <div style="margin-bottom:4px">🍳 &nbsp;Log your first meal with a photo</div>
+          <div>🚶 &nbsp;Complete your first activity session</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="ob-footer">
+    <div class="ob-btn-row">
+      <button class="ob-back" id="ob-back" onclick="obBack()" style="display:none">Back</button>
+      <button class="ob-next" id="ob-next" onclick="obNext()">Continue →</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="main-app" style="display:none;flex:1;overflow:hidden;flex-direction:column">
+
+  <div class="top-bar">
+    <div class="top-logo">Pinky <span>Didi</span> 🌸</div>
+    <div class="top-right">
+      <div class="icon-btn" onclick="toggleNotif()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <div class="bell-dot show" id="bell-dot"></div>
+      </div>
+      <div class="icon-btn" onclick="switchScreen('profile')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notifications panel -->
+  <div class="notif-panel" id="notif-panel">
+    <div class="np-head">Reminders <span class="np-clear" onclick="clearNotifs()">Clear all</span></div>
+    <div id="notif-list">
+      <div class="np-item" onclick="notifTap(this,'Morning check-in: Step on the scale first thing. Empty stomach. Upload the photo.')"><div class="np-dot" style="background:var(--amber)"></div><div><div class="np-text">Morning weigh-in — upload scale photo</div><div class="np-time">8:00 AM</div></div></div>
+      <div class="np-item" onclick="notifTap(this,'Water reminder: Stay hydrated. How many litres have you had today?')"><div class="np-dot" style="background:var(--blue)"></div><div><div class="np-text">Water reminder — stay hydrated today</div><div class="np-time">1:00 PM</div></div></div>
+      <div class="np-item" onclick="notifTap(this,'Meal log: Upload a photo of what you ate today for Didi to review.')"><div class="np-dot" style="background:var(--accent)"></div><div><div class="np-text">Evening meal log — upload food photos</div><div class="np-time">7:00 PM</div></div></div>
+      <div class="np-item" onclick="notifTap(this,'Activity reminder: Did you complete your activity today?')"><div class="np-dot" style="background:var(--red)"></div><div><div class="np-text">Activity reminder — time to move</div><div class="np-time">7:30 PM</div></div></div>
+    </div>
+  </div>
+
+  <div class="screens">
+
+    <!-- CHAT -->
+    <div class="screen active" id="s-chat">
+      <div id="edu-nudge-container"></div>
+      <div class="chat-hist" id="chat-hist">
+        <div class="msg ai"><div class="msg-tag">Pinky Didi</div><div class="bubble">Aaiye! 🌸 Start by stepping on the scale tomorrow morning — empty stomach. Upload the photo. Then log your first meal and let's begin together.</div><div class="msg-time">Now</div></div>
+      </div>
+      <div class="act-bar">
+        <div class="act-btns">
+          <button class="act-btn" onclick="document.getElementById('file-food').click()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#9A9890" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+            <div class="act-lbl">Food</div>
+          </button>
+          <button class="act-btn" onclick="document.getElementById('file-weight').click()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#9A9890" stroke-width="1.8"><path d="M12 2a4 4 0 0 1 4 4H8a4 4 0 0 1 4-4z"/><rect x="2" y="6" width="20" height="16" rx="2"/><path d="M12 12v4m0 0-2-2m2 2 2-2"/></svg>
+            <div class="act-lbl">Weight</div>
+          </button>
+          <button class="act-btn" onclick="switchScreen('activity')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#9A9890" stroke-width="1.8"><circle cx="13" cy="4" r="1.5"/><path d="M6 20l4-7m3 7-1-4 3-2 2 4M7.5 13.5C9 11 11 9.5 13 9l1.5 3.5-3 2"/></svg>
+            <div class="act-lbl">Activity</div>
+          </button>
+          <button class="act-btn" onclick="document.getElementById('chat-in').focus()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#9A9890" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <div class="act-lbl">Type</div>
+          </button>
+        </div>
+        <div class="chat-row">
+          <textarea class="chat-in" id="chat-in" placeholder="Talk to Didi..." onkeydown="handleKey(event)" rows="1"></textarea>
+          <button class="send-btn" id="send-btn" onclick="sendMsg()"><svg viewBox="0 0 24 24" fill="none" stroke="#0A0A0B" stroke-width="2.5" width="17" height="17"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
+        </div>
+      </div>
+      <input type="file" id="file-food" accept="image/*" style="display:none" onchange="handleFile(event,'food')">
+      <input type="file" id="file-weight" accept="image/*" style="display:none" onchange="handleFile(event,'weight')">
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="screen" id="s-dash">
+      <div class="scroll">
+        <div style="margin-bottom:12px"><div style="font-size:17px;font-weight:600;letter-spacing:-.3px">Your Progress</div><p id="dash-sub" style="font-size:11px;color:var(--text2);margin-top:2px">Tracking your journey</p></div>
+        <div class="insight-box" onclick="refreshInsight()">
+          <div class="ib-label"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg> Didi's insight <span style="font-size:9px;opacity:.5;font-weight:400">tap to refresh</span></div>
+          <div class="ib-text" id="insight-text">Tap here and Didi will share a personalised observation about your progress.</div>
+        </div>
+        <div class="metrics">
+          <div class="mc"><div class="mc-l">Weight</div><div class="mc-v" id="d-weight">—</div><div class="mc-u">kg</div><div class="badge bg" id="d-weight-badge">Log to start</div></div>
+          <div class="mc"><div class="mc-l">Water Today</div><div class="mc-v" id="d-water">0</div><div class="mc-u">litres</div><div class="badge ba">Target 4L</div></div>
+          <div class="mc"><div class="mc-l">Activity</div><div class="mc-v" id="d-acts">0</div><div class="mc-u">sessions</div><div class="badge bg" id="d-act-badge">Start today</div></div>
+          <div class="mc"><div class="mc-l">Days Active</div><div class="mc-v" id="d-days">1</div><div class="mc-u">streak</div><div class="badge bb">Keep going</div></div>
+        </div>
+
+        <!-- Water log -->
+        <div class="chart-card">
+          <div class="cc-h"><div class="cc-t">Water Log</div><div class="cc-s">Today's target: 4L</div></div>
+          <div class="log-row">
+            <input class="log-input" id="water-input" type="number" placeholder="Litres drank (e.g. 0.5)" step="0.25" min="0" max="4">
+            <button class="log-btn" onclick="logWater()">Add</button>
+          </div>
+          <div style="height:6px;background:var(--bg4);border-radius:3px;margin-top:8px;overflow:hidden"><div id="water-bar" style="height:100%;background:var(--blue);border-radius:3px;transition:width .4s;width:0%"></div></div>
+          <div style="font-size:11px;color:var(--text3);margin-top:5px" id="water-label">0 / 4 litres</div>
+        </div>
+
+        <!-- Sleep log -->
+        <div class="chart-card">
+          <div class="cc-h"><div class="cc-t">Sleep Log</div><div class="cc-s">Hours last night</div></div>
+          <div class="log-row">
+            <input class="log-input" id="sleep-input" type="number" placeholder="Hours slept (e.g. 7.5)" step="0.5" min="0" max="16">
+            <button class="log-btn" onclick="logSleep()">Log</button>
+          </div>
+          <div class="sleep-bars" id="sl-bars"></div>
+          <div style="display:flex;gap:4px;margin-top:3px" id="sl-days"></div>
+        </div>
+
+        <div class="chart-card">
+          <div class="cc-h"><div class="cc-t">Weight Trend</div><div class="cc-s">Upload scale photo daily</div></div>
+          <svg class="wt-svg" viewBox="0 0 540 80" preserveAspectRatio="none">
+            <text x="270" y="45" text-anchor="middle" font-size="11" fill="#55534F" font-family="DM Sans">Upload your scale photo to start tracking</text>
+          </svg>
+        </div>
+        <div class="chart-card">
+          <div class="cc-h"><div class="cc-t">Meal Log</div><div class="cc-s">Last 14 days</div></div>
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:3px" id="fc-days"></div>
+          <div class="fc-grid" id="fc-cells"></div>
+        </div>
+        <div style="height:16px"></div>
+      </div>
+    </div>
+
+    <!-- ACTIVITY -->
+    <div class="screen" id="s-activity">
+      <div class="activity-scroll">
+        <div style="margin-bottom:12px"><div style="font-size:17px;font-weight:600;letter-spacing:-.3px">Activity</div><p id="act-screen-sub" style="font-size:11px;color:var(--text2);margin-top:2px">Select and start your session</p></div>
+
+        <div class="section-hd">Select activity</div>
+        <div class="act-pills" id="act-select-pills"></div>
+
+        <div class="act-timer-card">
+          <div class="act-timer-num" id="act-timer-display">00:00</div>
+          <div class="act-timer-label" id="act-timer-label">Ready to start</div>
+        </div>
+
+        <div class="act-btn-row">
+          <button class="act-start-btn" id="act-start-btn" onclick="openM('m-act-start')">Start Session</button>
+          <button class="act-end-btn" id="act-end-btn" onclick="openM('m-act-stop')" disabled>End Session</button>
+        </div>
+
+        <div class="section-hd">Recent activity</div>
+        <div id="act-hist-list"><div style="font-size:12px;color:var(--text3);padding:4px 0">No sessions yet. Start your first one above.</div></div>
+        <div style="height:16px"></div>
+      </div>
+    </div>
+
+    <!-- PROFILE -->
+    <div class="screen" id="s-profile">
+      <div class="profile-scroll">
+        <div class="av-row">
+          <div class="av" id="p-av">?</div>
+          <div>
+            <div style="font-size:16px;font-weight:600" id="p-name">Your Name</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px" id="p-email">—</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:4px">Day <span id="p-day">1</span> of your journey</div>
+          </div>
+        </div>
+        <div class="stats-row">
+          <div class="stat-box"><div class="sv" id="ps-loss">—</div><div class="sl">kg change</div></div>
+          <div class="stat-box"><div class="sv" id="ps-acts">0</div><div class="sl">sessions</div></div>
+          <div class="stat-box"><div class="sv" id="ps-meals">0</div><div class="sl">meals logged</div></div>
+        </div>
+
+        <div class="section-hd">Personal details</div>
+        <div class="info-card">
+          <div class="ir"><span class="ik">Age</span><span class="iv" id="pi-age">—</span></div>
+          <div class="ir"><span class="ik">Gender</span><span class="iv" id="pi-gender">—</span></div>
+          <div class="ir"><span class="ik">Height</span><span class="iv" id="pi-ht">—</span></div>
+          <div class="ir"><span class="ik">Starting weight</span><span class="iv" id="pi-swt">—</span></div>
+          <div class="ir"><span class="ik">Goal weight</span><span class="iv" id="pi-goal">—</span></div>
+          <div class="ir"><span class="ik">BMI</span><span class="iv" id="pi-bmi">—</span></div>
+          <div class="ir"><span class="ik">Diet preference</span><span class="iv" id="pi-diet">—</span></div>
+        </div>
+
+        <div class="section-hd">Activity preferences</div>
+        <div class="info-card">
+          <div class="ir"><span class="ik">Activity enabled</span><button class="toggle on" id="act-toggle" onclick="toggleActEnabled()"></button></div>
+          <div class="ir"><span class="ik">Preferred duration</span><span class="iv" id="pi-dur">30 min</span></div>
+          <div class="ir"><span class="ik">Preferred types</span><span class="iv" id="pi-types" style="text-align:right;max-width:55%;font-size:11px">Walking</span></div>
+        </div>
+
+        <div class="section-hd">Notifications</div>
+        <div class="info-card">
+          <div class="ir"><span class="ik">Morning weigh-in</span><button class="toggle on" id="notif-weight-toggle"></button></div>
+          <div class="ir"><span class="ik">Water reminders</span><button class="toggle on" id="notif-water-toggle"></button></div>
+          <div class="ir"><span class="ik">Activity reminder</span><button class="toggle on" id="notif-act-toggle"></button></div>
+          <div class="ir"><span class="ik">Educational nudges</span><button class="toggle on" id="notif-edu-toggle"></button></div>
+        </div>
+
+        <!-- Admin section — only shows for adityas733@gmail.com -->
+        <div id="admin-section" style="display:none">
+          <div class="section-hd">Admin</div>
+          <div class="info-card">
+            <div class="ir tappable" onclick="switchScreen('admin')"><span class="ik">View analytics dashboard</span><span style="color:var(--purple);font-size:12px">Open →</span></div>
+          </div>
+        </div>
+
+        <div class="section-hd">Account</div>
+        <div class="info-card">
+          <div class="ir tappable" onclick="showLegalModal('tc')"><span class="ik">Terms &amp; Conditions</span><span style="color:var(--accent);font-size:12px">View →</span></div>
+          <div class="ir tappable" onclick="showLegalModal('pp')"><span class="ik">Privacy Policy</span><span style="color:var(--accent);font-size:12px">View →</span></div>
+          <div class="ir"><span class="ik">Sign-in method</span><span class="iv" id="pi-method">—</span></div>
+        </div>
+        <button class="sign-out-btn" onclick="doSignOut()">Sign out</button>
+        <button class="del-btn" onclick="confirmDelete()">Delete account</button>
+        <div style="height:6px"></div>
+      </div>
+    </div>
+
+    <!-- ADMIN -->
+    <div class="screen" id="s-admin">
+      <div class="admin-banner">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Admin View — Owner Only
+      </div>
+      <div class="scroll">
+        <div style="margin-bottom:12px"><div style="font-size:16px;font-weight:600;letter-spacing:-.3px">Analytics</div><div style="font-size:11px;color:var(--text2);margin-top:2px">All users · Live data</div></div>
+        <div class="admin-metrics">
+          <div class="amc"><div class="amc-l">Total Users</div><div class="amc-v">—</div><div class="amc-s">registered</div></div>
+          <div class="amc"><div class="amc-l">DAU</div><div class="amc-v">—</div><div class="amc-s">active today</div></div>
+          <div class="amc"><div class="amc-l">Avg Weight Δ</div><div class="amc-v">—</div><div class="amc-s">kg per user</div></div>
+          <div class="amc"><div class="amc-l">Activity Rate</div><div class="amc-v">—</div><div class="amc-s">logged today</div></div>
+        </div>
+        <div class="chart-card">
+          <div class="cc-h"><div class="cc-t">Top Food Flags</div><div class="cc-s">% of meal logs</div></div>
+          <div class="bar-chart">
+            <div class="bc-row"><div class="bc-label">Refined oils</div><div class="bc-track"><div class="bc-fill" style="width:68%;background:var(--red)"></div></div><div class="bc-val">68%</div></div>
+            <div class="bc-row"><div class="bc-label">Sugar / sweets</div><div class="bc-track"><div class="bc-fill" style="width:54%;background:var(--amber)"></div></div><div class="bc-val">54%</div></div>
+            <div class="bc-row"><div class="bc-label">Roti / rice</div><div class="bc-track"><div class="bc-fill" style="width:49%;background:var(--amber)"></div></div><div class="bc-val">49%</div></div>
+            <div class="bc-row"><div class="bc-label">No fat at start</div><div class="bc-track"><div class="bc-fill" style="width:38%;background:var(--blue)"></div></div><div class="bc-val">38%</div></div>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="cc-h"><div class="cc-t">Retention</div></div>
+          <div class="retention-row">
+            <div class="ret-box"><div class="ret-v" style="color:var(--accent)">—</div><div class="ret-l">Day 1</div></div>
+            <div class="ret-box"><div class="ret-v" style="color:var(--accent)">—</div><div class="ret-l">Day 7</div></div>
+            <div class="ret-box"><div class="ret-v" style="color:var(--amber)">—</div><div class="ret-l">Day 14</div></div>
+            <div class="ret-box"><div class="ret-v" style="color:var(--amber)">—</div><div class="ret-l">Day 30</div></div>
+          </div>
+        </div>
+        <div style="height:16px"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="bottom-nav">
+    <button class="bn active" id="bn-chat" onclick="switchScreen('chat')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><div class="bn-l">Didi</div></button>
+    <button class="bn" id="bn-dash" onclick="switchScreen('dash')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 17h7m-3.5-3.5v7"/></svg><div class="bn-l">Progress</div></button>
+    <button class="bn" id="bn-activity" onclick="switchScreen('activity')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><div class="bn-l">Activity</div></button>
+  </div>
+</div>
+
+<!-- ACTIVITY MODALS -->
+<div class="overlay" id="m-act-start"><div class="modal"><div class="modal-t">Start session?</div><div class="modal-s" id="m-act-start-sub">Timer starts now.</div><div class="modal-btns"><button class="mc-cancel" onclick="closeM('m-act-start')">Cancel</button><button class="mc-start" onclick="confirmActStart()">Start</button></div></div></div>
+<div class="overlay" id="m-act-stop"><div class="modal"><div class="modal-t">End session?</div><div class="modal-s" id="m-act-stop-sub">Your time will be saved.</div><div class="modal-btns"><button class="mc-cancel" onclick="closeM('m-act-stop')">Keep going</button><button class="mc-stop" onclick="confirmActStop()">End session</button></div></div></div>
+
+<!-- LEGAL MODAL -->
+<div class="overlay" id="m-legal">
+  <div class="modal" style="max-height:80dvh;overflow:hidden;display:flex;flex-direction:column">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-shrink:0">
+      <div class="modal-t" id="legal-modal-title">Terms &amp; Conditions</div>
+      <div style="cursor:pointer;color:var(--text3);font-size:22px;line-height:1;padding:0 4px" onclick="closeM('m-legal')">×</div>
+    </div>
+    <div class="legal-scroll" id="legal-modal-body" style="max-height:60dvh;flex:1"></div>
+  </div>
+</div>
+
+<!-- ADD TO HOME SCREEN -->
+<div class="a2hs-sheet" id="a2hs-sheet">
+  <div class="a2hs-title">Add Pinky Didi to your home screen 🌸</div>
+  <div class="a2hs-sub">Get quick access and a native app feel — no App Store needed. Tap Share → Add to Home Screen on iOS, or the menu → Install on Android.</div>
+  <div class="a2hs-btns">
+    <button class="btn-secondary" style="flex:1;padding:11px" onclick="dismissA2HS()">Maybe later</button>
+    <button class="btn-primary" style="flex:1;padding:11px" onclick="dismissA2HS()">Got it ✓</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══ CONFIG ═══════════════════════════════════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyCAmfSlmU5XUqBYjvdVk8jD7SiRXvp-9TQ",
+  authDomain: "aslibhook-prod.firebaseapp.com",
+  projectId: "aslibhook-prod",
+  storageBucket: "aslibhook-prod.firebasestorage.app",
+  messagingSenderId: "534037132902",
+  appId: "1:534037132902:web:1ae0cdee6eb3f9798edfa7"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+const AI_PROXY_URL = 'https://pinkydidi-proxy.vercel.app/api/chat';
+const ADMIN_EMAIL = 'adityas733@gmail.com';
+
+// ══ SYSTEM PROMPT ════════════════════════════════════════════════════════════
+const SYS = `You are Pinky Didi — a warm, knowledgeable personal weight coach. You speak like an older didi (sister) who genuinely cares and gives clear, structured guidance.
+
+DIETARY GUIDELINES you follow:
+ENCOURAGED: Paneer, eggs, chicken, mutton, fish, full cream dairy (milk, curd, butter, ghee, cream), coconut oil. Above-ground vegetables (spinach, bhindi, cauliflower, cabbage, broccoli, capsicum, mushroom, beans, cucumber, onion, tomato). Berries. Small amounts of nuts (4-5 almonds or walnuts).
+Starting meals with a fat source (ghee, butter, coconut oil) is helpful.
+LESS IDEAL: Refined oils, processed foods, sugar, excessive grains and starchy vegetables.
+HYDRATION: 4 litres of water daily is a good target.
+ACTIVITY: Consistent daily movement supports progress.
+
+FOOD IMAGE ANALYSIS: When a user uploads a food photo, describe what you observe, note what looks well-chosen and what could be improved, and ask what cooking oil was used if not visible.
+
+WEIGHT PHOTOS: Read and state the number clearly. If unclear, ask to retake.
+
+TONE: Warm, supportive, and informative — like a knowledgeable older sister. Give practical observations, not guilt. Celebrate consistency. Be direct when helpful.
+
+Keep responses SHORT — 2-4 sentences unless listing items. Mix in occasional Hindi words naturally (Aaiye, Theek hai, Bahut accha).`;
+
+// ══ STATE ════════════════════════════════════════════════════════════════════
+let ud={}, gender='M', diet='veg', actPref='yes', selectedDur='30', selectedActTypes=['Walking'], obStep=1;
+let chatHistory=[], isThinking=false;
+let actRunning=false, actStartTime=null, actTimer=null, actSecs=0, selectedActivity='Walking';
+let appData={weights:[],meals:[],activities:[],water:0,sleepLog:[]};
+let currentUser=null;
+
+// ══ EDUCATION NUDGES ═════════════════════════════════════════════════════════
+const EDU_NUDGES = [
+  'Starting your meal with ghee or butter helps your body feel satisfied for longer.',
+  'Refined oils are inflammatory — coconut oil, ghee, and butter are better choices.',
+  'Drinking water before a meal can naturally reduce how much you eat.',
+  'Above-ground vegetables are generally easier for your body to digest.',
+  'Consistent sleep supports metabolism and reduces late-night cravings.',
+  'Fat from dairy and eggs keeps you fuller — and is allowed here.',
+  'Fewer, more satisfying meals tend to work better than frequent snacking.',
+];
+let nudgeIdx = 0;
+let nudgeShown = false;
+
+function showEduNudge(){
+  if(nudgeShown)return;
+  const prefs = getPrefs();
+  if(!prefs.eduNudges)return;
+  nudgeShown = true;
+  const container = document.getElementById('edu-nudge-container');
+  const msg = EDU_NUDGES[nudgeIdx % EDU_NUDGES.length];
+  nudgeIdx++;
+  container.innerHTML = `<div class="edu-nudge"><div class="edu-nudge-text">💡 ${msg}</div><div class="edu-nudge-close" onclick="dismissNudge()">×</div></div>`;
+  setTimeout(()=>dismissNudge(), 6000);
+}
+function dismissNudge(){document.getElementById('edu-nudge-container').innerHTML='';}
+function getPrefs(){return{eduNudges:document.getElementById('notif-edu-toggle')?.classList.contains('on')??true};}
+
+// ══ STORAGE ══════════════════════════════════════════════════════════════════
+function save(){
+  try{
+    const k = currentUser?'ab_'+currentUser.uid:'ab_guest';
+    localStorage.setItem(k+'_u', JSON.stringify(ud));
+    localStorage.setItem(k+'_d', JSON.stringify(appData));
+  }catch(e){}
+}
+function loadData(uid){
+  try{
+    const k='ab_'+uid;
+    const u=localStorage.getItem(k+'_u');
+    const d=localStorage.getItem(k+'_d');
+    if(u)ud=JSON.parse(u);
+    if(d)appData=JSON.parse(d);
+  }catch(e){}
+}
+
+// ══ AUTH ═════════════════════════════════════════════════════════════════════
+auth.getRedirectResult().then(result=>{
+  if(result&&result.user){
+    currentUser=result.user;
+    loadData(result.user.uid);
+    if(ud.name){showMainApp(result.user);}
+    else{showOnboarding();}
+  }
+}).catch(e=>{
+  if(e.code&&e.code!=='auth/no-auth-event'&&e.code!=='auth/null-user'){
+    toast('Google sign-in failed. Please try again.');
+  }
+});
+
+auth.onAuthStateChanged(user=>{
+  if(user){
+    currentUser=user;
+    loadData(user.uid);
+    if(ud.name){showMainApp(user);}
+    else{showOnboarding();}
+  }else{
+    showLanding();
+  }
+});
+
+// ══ SCREEN NAV ════════════════════════════════════════════════════════════════
+function hideAll(){
+  ['auth-signup','auth-verify','auth-login','auth-forgot','onboard','main-app'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.style.display='none';el.classList.remove('open');}
+  });
+}
+function showLanding(){hideAll();document.getElementById('landing').style.display='flex';showA2HS(false);}
+function openAuth(id){hideAll();document.getElementById('landing').style.display='none';const el=document.getElementById(id);el.style.display='flex';el.classList.add('open');}
+function showSignup(){openAuth('auth-signup');}
+function showLogin(){openAuth('auth-login');}
+function showForgotPw(){openAuth('auth-forgot');}
+function showOnboarding(){hideAll();const ob=document.getElementById('onboard');ob.style.display='flex';ob.classList.add('open');}
+function showMainApp(user){
+  hideAll();
+  const ma=document.getElementById('main-app');
+  ma.style.display='flex';ma.style.flexDirection='column';
+  applyProfile(user);
+  buildDash();
+  buildActPills();
+  if(chatHistory.length===0){
+    const name=ud.name||user?.displayName||'friend';
+    addMsg(`Aaiye ${name}! 🌸 Pinky Didi is here. Start by stepping on the scale tomorrow morning — empty stomach. Upload the photo and we begin your journey.`,'ai');
+    setTimeout(showEduNudge, 3000);
+  }
+  // Show admin section for admin user
+  if(user?.email===ADMIN_EMAIL){
+    document.getElementById('admin-section').style.display='block';
+  }
+  showA2HS(true);
+}
+
+// ══ A2HS PROMPT ══════════════════════════════════════════════════════════════
+function showA2HS(loggedIn){
+  const key=loggedIn?'a2hs_logged':'a2hs_guest';
+  const last=parseInt(localStorage.getItem(key+'_last')||'0');
+  const count=parseInt(localStorage.getItem(key+'_count')||'0');
+  const now=Date.now();
+  const interval=loggedIn?172800000:0; // 48h for logged in, always for guest
+  if(now-last>interval){
+    localStorage.setItem(key+'_last',now);
+    localStorage.setItem(key+'_count',count+1);
+    setTimeout(()=>document.getElementById('a2hs-sheet').classList.add('open'),4000);
+  }
+}
+function dismissA2HS(){document.getElementById('a2hs-sheet').classList.remove('open');}
+
+// ══ GOOGLE ════════════════════════════════════════════════════════════════════
+async function signInGoogle(){
+  const provider=new firebase.auth.GoogleAuthProvider();
+  try{await auth.signInWithRedirect(provider);}
+  catch(e){toast('Google sign-in failed. Please try again.');}
+}
+
+// ══ EMAIL AUTH ════════════════════════════════════════════════════════════════
+async function doSignup(){
+  const name=document.getElementById('su-name').value.trim();
+  const email=document.getElementById('su-email').value.trim().toLowerCase();
+  const pass=document.getElementById('su-pass').value;
+  let valid=true;
+  if(!email||!email.includes('@')){showErr('su-email-err','Please enter a valid email address');valid=false;}
+  if(pass.length<8){showErr('su-pass-err','Password must be at least 8 characters');valid=false;}
+  if(!valid)return;
+  const btn=document.getElementById('su-btn');btn.disabled=true;btn.textContent='Creating account...';
+  try{
+    await auth.createUserWithEmailAndPassword(email,pass);
+    await auth.currentUser.updateProfile({displayName:name});
+    await auth.currentUser.sendEmailVerification();
+    document.getElementById('verify-email-display').textContent=email;
+    openAuth('auth-verify');
+    toast('Verification email sent! Check your inbox.');
+  }catch(e){
+    if(e.code==='auth/email-already-in-use')showErr('su-email-err','An account with this email already exists. Please log in instead.');
+    else if(e.code==='auth/invalid-email')showErr('su-email-err','Please enter a valid email address.');
+    else if(e.code==='auth/weak-password')showErr('su-pass-err','Password is too weak. Use at least 8 characters.');
+    else showErr('su-email-err','Something went wrong: '+e.message);
+  }
+  btn.disabled=false;btn.textContent='Create account & verify email';
+}
+function checkVerified(){
+  const user=auth.currentUser;
+  if(!user){showErr('verify-err','Session expired. Please sign up again.');return;}
+  user.reload().then(()=>{
+    if(auth.currentUser.emailVerified){openAuth('auth-login');toast('Email verified! Please log in.');}
+    else showErr('verify-err','Not yet verified. Click the link in your email first, then try again.');
+  });
+}
+function resendVerification(){const user=auth.currentUser;if(user)user.sendEmailVerification().then(()=>toast('Verification email resent!'));}
+async function doLogin(){
+  const email=document.getElementById('li-email').value.trim().toLowerCase();
+  const pass=document.getElementById('li-pass').value;
+  if(!email||!pass){showErr('li-err','Please enter your email and password.');return;}
+  const btn=document.getElementById('li-btn');btn.disabled=true;btn.textContent='Logging in...';
+  try{await auth.signInWithEmailAndPassword(email,pass);}
+  catch(e){
+    if(e.code==='auth/user-not-found')showErr('li-err','No account found with this email.');
+    else if(e.code==='auth/wrong-password')showErr('li-err','Incorrect password.');
+    else if(e.code==='auth/invalid-credential')showErr('li-err','Email or password is incorrect.');
+    else if(e.code==='auth/too-many-requests')showErr('li-err','Too many attempts. Wait a few minutes and try again.');
+    else if(e.code==='auth/network-request-failed')showErr('li-err','Network error. Check your connection and try again.');
+    else showErr('li-err','Login failed: '+e.message);
+  }
+  btn.disabled=false;btn.textContent='Log in';
+}
+async function doForgotPw(){
+  const email=document.getElementById('fp-email').value.trim();
+  if(!email){showErr('fp-err','Please enter your email address.');return;}
+  try{await auth.sendPasswordResetEmail(email);toast('Reset link sent! Check your inbox.');showLogin();}
+  catch(e){
+    if(e.code==='auth/user-not-found')showErr('fp-err','No account found with this email.');
+    else showErr('fp-err','Could not send reset email: '+e.message);
+  }
+}
+function doSignOut(){auth.signOut().then(()=>{ud={};appData={weights:[],meals:[],activities:[],water:0,sleepLog:[]};chatHistory=[];});}
+function confirmDelete(){if(confirm('Delete your account and all data? This cannot be undone.')){auth.currentUser?.delete().then(()=>toast('Account deleted.')).catch(()=>toast('Please re-login and try again.'));}}
+function showErr(id,msg){const el=document.getElementById(id);if(el){el.textContent=msg;el.classList.add('show');}}
+function clearErr(id){const el=document.getElementById(id);if(el)el.classList.remove('show');}
+
+// ══ ONBOARDING ════════════════════════════════════════════════════════════════
+const OB_STEPS=6;
+function obNext(){
+  if(obStep===5){
+    if(!document.getElementById('tc-check').classList.contains('checked')||
+       !document.getElementById('pp-check').classList.contains('checked')||
+       !document.getElementById('age-check').classList.contains('checked')){
+      toast('Please accept all three checkboxes to continue.');return;
+    }
+  }
+  if(obStep<OB_STEPS){obStep++;showOb();}else{finishOb();}
+}
+function obBack(){if(obStep>1){obStep--;showOb();}}
+function showOb(){
+  document.querySelectorAll('.ob-step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('ob-step-'+obStep).classList.add('active');
+  document.getElementById('ob-bar').style.width=Math.round((obStep/OB_STEPS)*100)+'%';
+  document.getElementById('ob-back').style.display=obStep>1?'block':'none';
+  document.getElementById('ob-next').textContent=obStep===OB_STEPS?"Let's begin! 🌸":'Continue →';
+}
+function selG(g){gender=g;document.getElementById('gb-m').classList.toggle('sel',g==='M');document.getElementById('gb-f').classList.toggle('sel',g==='F');}
+function selDiet(d){diet=d;document.getElementById('diet-veg').classList.toggle('sel',d==='veg');document.getElementById('diet-nonveg').classList.toggle('sel',d==='nonveg');}
+function selActPref(p){
+  actPref=p;
+  document.getElementById('act-yes').classList.toggle('sel',p==='yes');
+  document.getElementById('act-no').classList.toggle('sel',p==='no');
+  document.getElementById('act-details').style.display=p==='yes'?'flex':'none';
+}
+function selDur(el,dur){selectedDur=dur;document.querySelectorAll('.dur-pill').forEach(p=>p.classList.remove('sel'));el.classList.add('sel');}
+function toggleActType(el,type){
+  el.classList.toggle('sel');
+  if(el.classList.contains('sel')){if(!selectedActTypes.includes(type))selectedActTypes.push(type);}
+  else{selectedActTypes=selectedActTypes.filter(t=>t!==type);}
+}
+function calcBMI(){
+  const w=parseFloat(document.getElementById('ob-wt').value);
+  const h=parseFloat(document.getElementById('ob-ht').value)/100;
+  if(w&&h>0){
+    const bmi=w/(h*h);
+    document.getElementById('bmi-num').textContent=bmi.toFixed(1);
+    document.getElementById('bmi-card').style.opacity='1';
+    const p=document.getElementById('bmi-pill');
+    let cat,bg,col;
+    if(bmi<18.5){cat='Underweight';bg='rgba(91,164,255,.12)';col='var(--blue)';}
+    else if(bmi<25){cat='Healthy';bg='rgba(200,245,100,.12)';col='var(--accent)';}
+    else if(bmi<30){cat='Overweight';bg='rgba(245,166,35,.12)';col='var(--amber)';}
+    else{cat='Obese';bg='rgba(255,82,82,.12)';col='var(--red)';}
+    p.textContent=cat;p.style.cssText=`background:${bg};color:${col};opacity:1;font-size:10px;padding:2px 9px;border-radius:20px;display:inline-block;font-weight:600;margin-top:5px`;
+    ud.bmi=bmi.toFixed(1);ud.bmiCat=cat;
+  }else{document.getElementById('bmi-card').style.opacity='.4';}
+}
+function toggleCheck(rowId,tickId){
+  const row=document.getElementById(rowId);const isChecked=row.classList.contains('checked');
+  row.classList.toggle('checked');document.getElementById(tickId).style.display=isChecked?'none':'block';
+}
+function finishOb(){
+  ud.name=document.getElementById('ob-name').value||currentUser?.displayName||'Friend';
+  ud.age=document.getElementById('ob-age').value||'—';
+  ud.gender=gender==='M'?'Male':'Female';
+  ud.diet=diet==='veg'?'Vegetarian':'Non-vegetarian';
+  ud.actPref=actPref;
+  ud.actDur=selectedDur;
+  ud.actTypes=selectedActTypes;
+  ud.weight=parseFloat(document.getElementById('ob-wt').value)||null;
+  ud.startWeight=ud.weight;
+  ud.goalWeight=parseFloat(document.getElementById('ob-goal').value)||null;
+  ud.height=document.getElementById('ob-ht').value||'—';
+  ud.startDate=new Date().toISOString();
+  if(ud.weight)appData.weights.push({kg:ud.weight,date:new Date().toISOString()});
+  save();
+  showMainApp(currentUser);
+}
+
+// ══ SCREENS ═══════════════════════════════════════════════════════════════════
+function switchScreen(s){
+  const allScreens=['chat','dash','activity','profile','admin'];
+  allScreens.forEach(x=>{
+    const sc=document.getElementById('s-'+x);
+    const bn=document.getElementById('bn-'+x);
+    if(sc)sc.classList.toggle('active',x===s);
+    if(bn)bn.classList.toggle('active',x===s);
+  });
+  closeNotif();
+  if(s==='dash')refreshDash();
+  if(s==='chat'){nudgeShown=false;setTimeout(showEduNudge,2000);}
+}
+
+// ══ NOTIFICATIONS ════════════════════════════════════════════════════════════
+function toggleNotif(){document.getElementById('notif-panel').classList.toggle('open');}
+function closeNotif(){document.getElementById('notif-panel').classList.remove('open');}
+function clearNotifs(){
+  document.getElementById('notif-list').innerHTML='<div style="padding:18px;text-align:center;font-size:12px;color:var(--text3)">No new reminders.</div>';
+  document.getElementById('bell-dot').classList.remove('show');closeNotif();
+}
+function notifTap(el,msg){
+  el.remove();closeNotif();switchScreen('chat');addMsg(msg,'ai');
+  if(!document.querySelector('.np-item')){
+    document.getElementById('notif-list').innerHTML='<div style="padding:18px;text-align:center;font-size:12px;color:var(--text3)">No new reminders.</div>';
+    document.getElementById('bell-dot').classList.remove('show');
+  }
+}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3000);}
+
+// ══ LEGAL ═════════════════════════════════════════════════════════════════════
+const PP_TEXT=`<h4>Privacy Policy — Pinky Didi App</h4>
+<p>Last updated: May 2026. This Policy explains how we collect, use, and protect your data per the IT Act 2000, IT Rules 2011, and GDPR for EU users.</p>
+<h4>1. Data We Collect</h4><p>Name, email, age, gender, body measurements, meal logs, activity logs, water and sleep data. We do not sell your data.</p>
+<h4>2. AI Processing</h4><p>Messages are processed by DeepSeek's API. We do not store conversations beyond your current session.</p>
+<h4>3. Images</h4><p>Food and weight photos are processed in-session for AI feedback. They are not stored on our servers.</p>
+<h4>4. Your Rights</h4><p>Access, correct, or delete your data at any time. EU/UK users have additional GDPR rights.</p>
+<h4>5. Security</h4><p>We use Firebase Authentication and HTTPS for all data in transit.</p>
+<h4>6. Children</h4><p>Not intended for persons under 18.</p>
+<h4>7. Contact</h4><p>legal@pinkydidi.in — complaints addressed within 30 days.</p>`;
+
+function showLegalModal(type){
+  document.getElementById('legal-modal-title').textContent=type==='tc'?'Terms & Conditions':'Privacy Policy';
+  document.getElementById('legal-modal-body').innerHTML=type==='tc'?document.getElementById('tc-scroll').innerHTML:PP_TEXT;
+  openM('m-legal');
+}
+
+// ══ AI ════════════════════════════════════════════════════════════════════════
+async function callAI(messages){
+  try{
+    const resp=await fetch(AI_PROXY_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'system',content:SYS},...messages]})});
+    if(!resp.ok){if(resp.status===402)return'Service quota reached. Try again later.';return'Something went wrong. Please try again.';}
+    const data=await resp.json();
+    return data.content||data.choices?.[0]?.message?.content||'No response received.';
+  }catch(e){return'Connection error. Check your internet and try again.';}
+}
+
+// ══ CHAT ══════════════════════════════════════════════════════════════════════
+function ts(){const n=new Date();return`${n.getHours()}:${String(n.getMinutes()).padStart(2,'0')}`;}
+function addMsg(content,role,imgSrc=null){
+  const box=document.getElementById('chat-hist');
+  const d=document.createElement('div');d.className='msg '+(role==='ai'?'ai':'user');
+  if(role==='ai')d.innerHTML=`<div class="msg-tag">Pinky Didi</div><div class="bubble">${content}</div><div class="msg-time">${ts()}</div>`;
+  else if(imgSrc)d.innerHTML=`<img src="${imgSrc}" class="img-preview"><div class="msg-time">${ts()}</div>`;
+  else d.innerHTML=`<div class="bubble">${content}</div><div class="msg-time">${ts()}</div>`;
+  box.appendChild(d);box.scrollTop=box.scrollHeight;
+}
+function showTyping(){const box=document.getElementById('chat-hist');const d=document.createElement('div');d.className='msg ai';d.id='td';d.innerHTML='<div class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';box.appendChild(d);box.scrollTop=box.scrollHeight;}
+function rmTyping(){const t=document.getElementById('td');if(t)t.remove();}
+async function sendToAI(msg){
+  chatHistory.push({role:'user',content:msg});showTyping();isThinking=true;
+  document.getElementById('send-btn').disabled=true;
+  const reply=await callAI(chatHistory);
+  rmTyping();isThinking=false;document.getElementById('send-btn').disabled=false;
+  chatHistory.push({role:'assistant',content:reply});addMsg(reply,'ai');
+}
+function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}}
+function sendMsg(){
+  const inp=document.getElementById('chat-in'),txt=inp.value.trim();
+  if(!txt||isThinking)return;
+  addMsg(txt,'user');inp.value='';inp.style.height='42px';
+  sendToAI(txt);
+}
+function handleFile(e,type){
+  const f=e.target.files[0];if(!f)return;
+  const reader=new FileReader();
+  reader.onload=async ev=>{
+    addMsg(null,'user',ev.target.result);
+    const msg=type==='food'?'I uploaded a photo of my meal. Please describe what you see, note what looks well-chosen, suggest any improvements, and ask what cooking oil or fat was used if not visible.':'I uploaded a photo of my weighing scale. Please read the number and confirm my weight.';
+    await sendToAI(msg);
+    if(type==='food'){appData.meals.push({date:new Date().toISOString()});save();}
+  };
+  reader.readAsDataURL(f);e.target.value='';
+}
+
+// ══ ACTIVITY ══════════════════════════════════════════════════════════════════
+const ALL_ACTIVITIES=['Walking','Running','Jogging','Cycling','Swimming','Yoga','Meditation','Gym','Basketball','Badminton','Chair exercises','Stretching'];
+function buildActPills(){
+  const container=document.getElementById('act-select-pills');
+  container.innerHTML='';
+  const preferred=ud.actTypes||['Walking'];
+  ALL_ACTIVITIES.forEach(a=>{
+    const pill=document.createElement('div');
+    pill.className='act-pill'+(preferred.includes(a)||a===selectedActivity?' sel':'');
+    pill.textContent=a;
+    pill.onclick=()=>{
+      document.querySelectorAll('.act-pill').forEach(p=>p.classList.remove('sel'));
+      pill.classList.add('sel');selectedActivity=a;
+      document.getElementById('m-act-start-sub').textContent=`Starting ${a}. Timer begins now.`;
+    };
+    container.appendChild(pill);
+  });
+  selectedActivity=preferred[0]||'Walking';
+}
+function openM(id){document.getElementById(id).classList.add('open');}
+function closeM(id){document.getElementById(id).classList.remove('open');}
+function pad(n){return String(n).padStart(2,'0');}
+function confirmActStart(){
+  closeM('m-act-start');actRunning=true;actStartTime=Date.now();actSecs=0;
+  document.getElementById('act-start-btn').disabled=true;
+  document.getElementById('act-end-btn').disabled=false;
+  document.getElementById('act-timer-label').textContent=`${selectedActivity} in progress`;
+  actTimer=setInterval(()=>{
+    actSecs=Math.floor((Date.now()-actStartTime)/1000);
+    const m=Math.floor(actSecs/60),s=actSecs%60;
+    document.getElementById('act-timer-display').textContent=`${pad(m)}:${pad(s)}`;
+  },500);
+  toast(`${selectedActivity} started!`);
+  addMsg(`${selectedActivity} started 🚶 Theek hai! Come back when you are done. Didi will be here.`,'ai');
+  switchScreen('chat');
+}
+function confirmActStop(){
+  closeM('m-act-stop');clearInterval(actTimer);actRunning=false;
+  const mins=Math.round(actSecs/60);
+  document.getElementById('act-start-btn').disabled=false;
+  document.getElementById('act-end-btn').disabled=true;
+  document.getElementById('act-timer-display').textContent='00:00';
+  document.getElementById('act-timer-label').textContent='Ready to start';
+  appData.activities.push({type:selectedActivity,mins,date:new Date().toISOString(),metTarget:mins>=parseInt(ud.actDur||30)});
+  save();updateActHist();updateActMetric();
+  const target=parseInt(ud.actDur||30);
+  const msg=mins>=target?`${mins} minutes of ${selectedActivity} — bahut accha! 🌸 Consistency is what matters most.`:`${mins} minutes of ${selectedActivity} logged. Every session counts. See you tomorrow.`;
+  addMsg(msg,'ai');toast(`${selectedActivity} logged: ${mins} min`);
+  switchScreen('chat');
+}
+function updateActHist(){
+  const list=document.getElementById('act-hist-list');list.innerHTML='';
+  const recent=appData.activities.slice(-5).reverse();
+  if(!recent.length){list.innerHTML='<div style="font-size:12px;color:var(--text3);padding:4px 0">No sessions yet.</div>';return;}
+  recent.forEach(a=>{
+    const item=document.createElement('div');item.className='act-hist-item';
+    const d=new Date(a.date);const label=isToday(d)?'Today':isYesterday(d)?'Yesterday':d.toLocaleDateString('en-IN',{month:'short',day:'numeric'});
+    item.innerHTML=`<div class="act-hist-left"><div class="act-hist-name">${a.type}</div><div class="act-hist-date">${label}</div></div><div class="act-hist-dur" style="color:${a.metTarget?'var(--accent)':'var(--amber)'}">${a.mins} min</div>`;
+    list.appendChild(item);
+  });
+}
+function updateActMetric(){
+  document.getElementById('d-acts').textContent=appData.activities.length;
+  const met=appData.activities.filter(a=>a.metTarget).length;
+  document.getElementById('d-act-badge').textContent=appData.activities.length>0?`${met} met target`:'Start today';
+}
+function toggleActEnabled(){
+  const btn=document.getElementById('act-toggle');btn.classList.toggle('on');
+  const en=btn.classList.contains('on');
+  // Show/hide activity tab
+  const bn=document.getElementById('bn-activity');if(bn)bn.style.opacity=en?'1':'.3';
+}
+
+// ══ WATER LOG ════════════════════════════════════════════════════════════════
+function logWater(){
+  const val=parseFloat(document.getElementById('water-input').value);
+  if(!val||val<=0){toast('Enter a valid amount');return;}
+  appData.water=Math.min(4,appData.water+val);save();
+  document.getElementById('water-input').value='';
+  updateWaterUI();
+  toast(`Water logged: +${val}L`);
+  if(appData.water>=4)addMsg('Bahut accha! You have hit your water target for today. 💧','ai');
+}
+function updateWaterUI(){
+  const pct=Math.min(100,(appData.water/4)*100);
+  document.getElementById('water-bar').style.width=pct+'%';
+  document.getElementById('water-label').textContent=`${appData.water.toFixed(1)} / 4 litres`;
+  document.getElementById('d-water').textContent=appData.water.toFixed(1);
+}
+
+// ══ SLEEP LOG ════════════════════════════════════════════════════════════════
+function logSleep(){
+  const val=parseFloat(document.getElementById('sleep-input').value);
+  if(!val||val<=0||val>24){toast('Enter valid sleep hours');return;}
+  const today=new Date().toISOString().split('T')[0];
+  appData.sleepLog=appData.sleepLog.filter(s=>s.date!==today);
+  appData.sleepLog.push({date:today,hours:val});
+  if(appData.sleepLog.length>14)appData.sleepLog=appData.sleepLog.slice(-14);
+  save();buildSleepChart();
+  document.getElementById('sleep-input').value='';
+  toast(`Sleep logged: ${val} hrs`);
+}
+function buildSleepChart(){
+  const sb=document.getElementById('sl-bars'),sd=document.getElementById('sl-days');
+  sb.innerHTML='';sd.innerHTML='';
+  const days=['M','T','W','T','F','S','S'];const today=new Date();
+  for(let i=6;i>=0;i--){
+    const d=new Date(today);d.setDate(today.getDate()-i);
+    const ds=d.toISOString().split('T')[0];
+    const entry=appData.sleepLog.find(s=>s.date===ds);
+    const h=entry?entry.hours:0;
+    const bar=document.createElement('div');bar.className='sb';
+    const fill=document.createElement('div');fill.className='sb-f';fill.style.height=`${Math.min(100,(h/10)*100)}%`;
+    bar.appendChild(fill);sb.appendChild(bar);
+    const l=document.createElement('div');l.className='sb-d';l.textContent=days[d.getDay()===0?6:d.getDay()-1];sd.appendChild(l);
+  }
+}
+
+// ══ DASHBOARD ═════════════════════════════════════════════════════════════════
+function refreshDash(){
+  if(appData.weights.length>0){
+    const latest=appData.weights[appData.weights.length-1].kg;
+    document.getElementById('d-weight').textContent=latest;
+    if(appData.weights.length>1){
+      const diff=(latest-appData.weights[0].kg).toFixed(1);
+      const badge=document.getElementById('d-weight-badge');
+      badge.textContent=(diff>0?'+':'')+diff+' kg';
+      badge.className='badge '+(parseFloat(diff)<=0?'bg':'ba');
+    }else{document.getElementById('d-weight-badge').textContent='First log';}
+  }
+  updateActMetric();updateWaterUI();
+  if(ud.startDate){const days=Math.max(1,Math.floor((Date.now()-new Date(ud.startDate))/86400000)+1);document.getElementById('d-days').textContent=days;}
+  document.getElementById('dash-sub').textContent=`${appData.meals.length} meals · ${appData.activities.length} sessions logged`;
+  buildMealCalendar();buildSleepChart();updateActHist();
+}
+function buildMealCalendar(){
+  const dr=document.getElementById('fc-days'),fc=document.getElementById('fc-cells');dr.innerHTML='';fc.innerHTML='';
+  const days=['M','T','W','T','F','S','S'],today=new Date();
+  for(let i=13;i>=0;i--){
+    const d=new Date(today);d.setDate(today.getDate()-i);
+    const dl=document.createElement('div');dl.className='fc-day';dl.textContent=days[d.getDay()===0?6:d.getDay()-1];dr.appendChild(dl);
+    const hasMeal=appData.meals.some(m=>isSameDay(new Date(m.date),d));
+    const cell=document.createElement('div');cell.className='fc-cell '+(hasMeal?'fc-ate':'fc-miss');cell.textContent=d.getDate();fc.appendChild(cell);
+  }
+}
+function isToday(d){const n=new Date();return d.getDate()===n.getDate()&&d.getMonth()===n.getMonth()&&d.getFullYear()===n.getFullYear();}
+function isYesterday(d){const y=new Date();y.setDate(y.getDate()-1);return d.getDate()===y.getDate()&&d.getMonth()===y.getMonth()&&d.getFullYear()===y.getFullYear();}
+function isSameDay(a,b){return a.getDate()===b.getDate()&&a.getMonth()===b.getMonth()&&a.getFullYear()===b.getFullYear();}
+function buildDash(){buildSleepChart();refreshDash();}
+async function refreshInsight(){
+  const el=document.getElementById('insight-text');el.textContent='Didi is thinking...';el.style.opacity='.5';
+  const summary=`User: ${ud.name||'user'}, ${ud.age} yrs, ${ud.gender||'—'}, ${ud.diet||'—'}. Starting weight: ${ud.startWeight||'—'} kg. Goal: ${ud.goalWeight||'—'} kg. Activities: ${appData.activities.length} sessions (${appData.activities.filter(a=>a.metTarget).length} met target). Meals logged: ${appData.meals.length}. Water today: ${appData.water}L. Days active: ${ud.startDate?Math.max(1,Math.floor((Date.now()-new Date(ud.startDate))/86400000)+1):1}.`;
+  const reply=await callAI([{role:'user',content:`As Pinky Didi, give one short personalised observation (2 sentences) about this user's progress: ${summary}. Be warm and specific. End with one practical suggestion for today.`}]);
+  el.textContent=reply;el.style.opacity='1';
+}
+
+// ══ PROFILE ═══════════════════════════════════════════════════════════════════
+function applyProfile(user){
+  const n=ud.name||user?.displayName||'Friend';
+  document.getElementById('p-av').innerHTML=user?.photoURL?`<img src="${user.photoURL}">`:(n[0]||'?').toUpperCase();
+  document.getElementById('p-name').textContent=n;
+  document.getElementById('p-email').textContent=user?.email||'—';
+  document.getElementById('pi-age').textContent=ud.age?ud.age+' yrs':'—';
+  document.getElementById('pi-gender').textContent=ud.gender||'—';
+  document.getElementById('pi-ht').textContent=ud.height?ud.height+' cm':'—';
+  document.getElementById('pi-swt').textContent=ud.startWeight?ud.startWeight+' kg':'—';
+  document.getElementById('pi-goal').textContent=ud.goalWeight?ud.goalWeight+' kg':'—';
+  document.getElementById('pi-diet').textContent=ud.diet||'—';
+  document.getElementById('pi-dur').textContent=(ud.actDur||'30')+' min';
+  document.getElementById('pi-types').textContent=(ud.actTypes||['Walking']).join(', ');
+  document.getElementById('pi-method').textContent=user?.providerData?.[0]?.providerId==='google.com'?'Google':'Email & Password';
+  if(ud.bmi){const clr=ud.bmiCat==='Healthy'?'var(--accent)':ud.bmiCat==='Overweight'?'var(--amber)':'var(--blue)';document.getElementById('pi-bmi').textContent=`${ud.bmi} — ${ud.bmiCat}`;document.getElementById('pi-bmi').style.color=clr;}
+  if(ud.startDate){const days=Math.max(1,Math.floor((Date.now()-new Date(ud.startDate))/86400000)+1);document.getElementById('p-day').textContent=days;}
+  document.getElementById('ps-acts').textContent=appData.activities.length;
+  document.getElementById('ps-meals').textContent=appData.meals.length;
+  if(appData.weights.length>1){const diff=(appData.weights[appData.weights.length-1].kg-appData.weights[0].kg).toFixed(1);document.getElementById('ps-loss').textContent=(diff>0?'+':'')+diff;}
+  if(ud.actPref==='no'){document.getElementById('act-toggle').classList.remove('on');}
+}
+
+document.addEventListener('click',e=>{if(!e.target.closest('.icon-btn')&&!e.target.closest('.notif-panel'))closeNotif();});
+</script>
+</body>
+</html>
